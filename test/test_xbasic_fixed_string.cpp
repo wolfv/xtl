@@ -12,7 +12,21 @@
 namespace xtl
 {
     using string_type = xbasic_fixed_string<char, 16, buffer | store_size, string_policy::throwing_error>;
+    using numpy_string = xbasic_fixed_string<char, 16, buffer, string_policy::throwing_error>;
+    using string_view = xbasic_fixed_string<char, -1, pointer | store_size, string_policy::throwing_error>;
     using size_type = string_type::size_type;
+
+    TEST(numpy_string, constructor)
+    {
+        std::string s = "thisisatest";
+        char buf[16];
+        strcpy(buf, s.c_str());
+        numpy_string x = *reinterpret_cast<numpy_string*>(buf);
+        string_view y(buf, 5);
+
+        std::cout << y << std::endl;
+    }
+
 
     TEST(xfixed_string, constructors)
     {

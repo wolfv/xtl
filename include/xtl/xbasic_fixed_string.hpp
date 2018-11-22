@@ -109,6 +109,11 @@ namespace xtl
         template <class T, std::size_t N>
         struct fixed_string_external_storage_impl
         {
+            fixed_string_external_storage_impl(T ptr, std::ptrdiff_t size)
+            {
+                m_buffer = ptr;
+            }
+
             T& buffer()
             {
                 return m_buffer;
@@ -149,6 +154,13 @@ namespace xtl
         {
             template <class T, std::size_t N>
             using type = fixed_string_storage_impl<const T*, N>;
+        };
+
+        template <>
+        struct select_storage<pointer | store_size>
+        {
+            template <class T, std::size_t N>
+            using type = fixed_string_storage_impl<T*, N>;
         };
 
         template <>
@@ -200,13 +212,13 @@ namespace xtl
 
         xbasic_fixed_string();
 
-        xbasic_fixed_string(value_type* ptr, std::ptrdiff_t size = -1)
+        xbasic_fixed_string(value_type* ptr, std::size_t size)
             : m_storage(ptr, size)
         {
         }
 
-        xbasic_fixed_string(detail::fixed_string_external_storage_impl<CT, N>& storage, std::ptrdiff_t size = -1)
-            : m_storage(storage, size)
+        xbasic_fixed_string(value_type* ptr)
+            : m_storage(ptr, std::strlen(ptr))
         {
         }
 
@@ -2296,11 +2308,64 @@ namespace xtl
      * Input / output *
      ******************/
 
+    // Adapted from https://github.com/martinmoene/string-view-lite
+    // License: BSL-1.0
+
+    namespace detail
+    {
+
+        template <class OS>
+        void write_padding(OS& os, std::streamsize n)
+        {
+            for (std::streamsize i = 0; i < n; ++i)
+            {
+                os.rdbuf()->sputc( os.fill() );
+            }
+        }
+
+        template <class OS, class S>
+        OS& write_to_stream(OS& os, const S& sv)
+        {
+            typename OS::sentry sentry(os);
+
+            if (!os)
+            {
+                return os;
+            }
+
+            const std::streamsize length = static_cast<std::streamsize>(sv.length());
+
+            // Whether, and how, to pad:
+            const bool pad = length < os.width();
+            const bool left_pad = pad && (os.flags() & std::ios_base::adjustfield) == std::ios_base::right;
+
+            if (left_pad)
+            {
+                write_padding(os, os.width() - length);
+            }
+
+            // Write span characters:
+            os.rdbuf()->sputn(sv.begin(), length);
+
+            if (pad && !left_pad)
+            {
+                write_padding(os, os.width() - length);
+            }
+
+            // Reset output stream width:
+            os.width(0);
+
+            return os;
+        }
+
+    } // namespace detail
+
+
     template <class CT, std::size_t N, int ST, template <std::size_t> class EP, class TR>
     inline std::basic_ostream<CT, TR>& operator<<(std::basic_ostream<CT, TR>& os,
                                                   const xbasic_fixed_string<CT, N, ST, EP, TR>& str)
     {
-        os << str.c_str();
+        detail::write_to_stream(os, str);
         return os;
     }
 

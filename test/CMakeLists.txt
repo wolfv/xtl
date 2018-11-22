@@ -86,21 +86,21 @@ endif(BIG_ENDIAN)
 include_directories(${GTEST_INCLUDE_DIRS})
 
 set(XTL_TESTS
-    test_xbase64.cpp
+    # test_xbase64.cpp
     test_xbasic_fixed_string.cpp
-    test_xcomplex.cpp
-    test_xcomplex_sequence.cpp
-    test_xclosure.cpp
-    test_xdynamic_bitset.cpp
-    test_xhash.cpp
-    test_xhierarchy_generator.cpp
-    test_xiterator_base.cpp
-    test_xmeta_utils.cpp
-    test_xoptional.cpp
-    test_xsequence.cpp
-    test_xtype_traits.cpp
-    test_xproxy_wrapper.cpp
-    test_xvariant.cpp
+    # test_xcomplex.cpp
+    # test_xcomplex_sequence.cpp
+    # test_xclosure.cpp
+    # test_xdynamic_bitset.cpp
+    # test_xhash.cpp
+    # test_xhierarchy_generator.cpp
+    # test_xiterator_base.cpp
+    # test_xmeta_utils.cpp
+    # test_xoptional.cpp
+    # test_xsequence.cpp
+    # test_xtype_traits.cpp
+    # test_xproxy_wrapper.cpp
+    # test_xvariant.cpp
 )
 
 if(nlohmann_json_FOUND)
