@@ -109,6 +109,8 @@ namespace xtl
         template <class T, std::size_t N>
         struct fixed_string_external_storage_impl
         {
+            fixed_string_external_storage_impl() = default;
+
             fixed_string_external_storage_impl(T ptr, std::ptrdiff_t size)
             {
                 m_buffer = ptr;
@@ -150,31 +152,10 @@ namespace xtl
         };
 
         template <>
-        struct select_storage<pointer | store_size | is_const>
-        {
-            template <class T, std::size_t N>
-            using type = fixed_string_storage_impl<const T*, N>;
-        };
-
-        template <>
-        struct select_storage<pointer | store_size>
-        {
-            template <class T, std::size_t N>
-            using type = fixed_string_storage_impl<T*, N>;
-        };
-
-        template <>
         struct select_storage<buffer>
         {
             template <class T, std::size_t N>
             using type = fixed_string_external_storage_impl<T[N + 1], N>;
-        };
-
-        template <>
-        struct select_storage<pointer>
-        {
-            template <class T, std::size_t N>
-            using type = fixed_string_external_storage_impl<T*, N>;
         };
     }
 
@@ -191,6 +172,9 @@ namespace xtl
         using value_type = CT;
         using size_type = std::size_t;
         using difference_type = std::ptrdiff_t;
+
+        using storage_type = typename detail::select_storage<ST>::template type<CT, N>;
+
         using reference = value_type&;
         using const_reference = const value_type&;
         using pointer = value_type*;
@@ -200,7 +184,6 @@ namespace xtl
         using reverse_iterator = std::reverse_iterator<iterator>;
         using const_reverse_iterator = std::reverse_iterator<const_iterator>;
 
-        using storage_type = typename detail::select_storage<ST>::template type<CT, N>;
 
         static const size_type npos;
 
@@ -211,16 +194,6 @@ namespace xtl
         using error_policy = EP<N>;
 
         xbasic_fixed_string();
-
-        xbasic_fixed_string(value_type* ptr, std::size_t size)
-            : m_storage(ptr, size)
-        {
-        }
-
-        xbasic_fixed_string(value_type* ptr)
-            : m_storage(ptr, std::strlen(ptr))
-        {
-        }
 
         explicit xbasic_fixed_string(size_type count, value_type ch);
         explicit xbasic_fixed_string(const self_type& other,
@@ -282,6 +255,7 @@ namespace xtl
         pointer data() noexcept;
         const_pointer data() const noexcept;
 
+        // TODO enable if only if null termination guaranteed.
         const_pointer c_str() const noexcept;
 
         iterator begin() noexcept;
